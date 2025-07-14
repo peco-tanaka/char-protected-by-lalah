@@ -230,7 +230,7 @@ h1 {
 }
 
 .piece.elder {
-    background: #ffffff;
+    background: #50C878;
     width: calc(var(--cell-size) * 2);
     height: var(--cell-size);
     font-size: calc(var(--cell-size) * 0.2);
