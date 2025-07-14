@@ -327,31 +327,157 @@ class GameUI {
     showWinMessage() {
         const game = getGame();
         this.finalMovesElement.textContent = game.moveCount;
-        this.winMessage.classList.remove('hidden');
         
-        // 背景オーバーレイを追加
-        const overlay = document.createElement('div');
-        overlay.className = 'overlay';
-        overlay.id = 'win-overlay';
-        document.body.appendChild(overlay);
+        // 派手なゴール演出を開始
+        this.startGoalCelebration();
         
-        // 娘ピースを祝福アニメーション
+        // 遅延して勝利メッセージを表示
+        setTimeout(() => {
+            this.winMessage.classList.remove('hidden');
+            this.winMessage.classList.add('enhanced');
+            
+            // 背景オーバーレイを追加
+            const overlay = document.createElement('div');
+            overlay.className = 'overlay';
+            overlay.id = 'win-overlay';
+            document.body.appendChild(overlay);
+        }, 1000);
+    }
+    
+    // 派手なゴール演出
+    startGoalCelebration() {
+        // 全画面フラッシュ
+        this.createScreenFlash();
+        
+        // ボード振動とレインボー効果
+        this.boardElement.classList.add('goal-celebration');
+        
+        // 娘ピースの特別演出
         const daughterElement = this.boardElement.querySelector('.piece.daughter');
         if (daughterElement) {
-            daughterElement.classList.add('celebrating');
-            setTimeout(() => {
-                daughterElement.classList.remove('celebrating');
-            }, 1000);
+            daughterElement.classList.add('goal-reached');
+            
+            // 花火エフェクト
+            this.createFireworks();
+            
+            // コンフェッティ（紙吹雪）
+            this.createConfetti();
+            
+            // スパークルエフェクト
+            daughterElement.classList.add('goal-effect');
         }
+        
+        // 効果音（仮想）
+        this.playVictorySound();
+        
+        // 3秒後にエフェクトをクリーンアップ
+        setTimeout(() => {
+            this.cleanupCelebrationEffects();
+        }, 3000);
+    }
+    
+    // 全画面フラッシュ効果
+    createScreenFlash() {
+        const flash = document.createElement('div');
+        flash.className = 'screen-flash';
+        document.body.appendChild(flash);
+        
+        setTimeout(() => {
+            if (flash.parentNode) {
+                flash.parentNode.removeChild(flash);
+            }
+        }, 500);
+    }
+    
+    // 花火エフェクト
+    createFireworks() {
+        const container = document.getElementById('game-container');
+        
+        for (let i = 0; i < 5; i++) {
+            const firework = document.createElement('div');
+            firework.className = 'firework';
+            container.appendChild(firework);
+            
+            // ランダム位置
+            const randomX = Math.random() * container.offsetWidth;
+            const randomY = Math.random() * container.offsetHeight;
+            firework.style.left = randomX + 'px';
+            firework.style.top = randomY + 'px';
+        }
+    }
+    
+    // コンフェッティ（紙吹雪）効果
+    createConfetti() {
+        for (let i = 0; i < 50; i++) {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            
+            // ランダム位置と遅延
+            confetti.style.left = Math.random() * 100 + 'vw';
+            confetti.style.animationDelay = Math.random() * 3 + 's';
+            confetti.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            
+            document.body.appendChild(confetti);
+            
+            // 自動削除
+            setTimeout(() => {
+                if (confetti.parentNode) {
+                    confetti.parentNode.removeChild(confetti);
+                }
+            }, 6000);
+        }
+    }
+    
+    // 勝利音効果（仮想）
+    playVictorySound() {
+        // 実際の音声ファイルがある場合は以下のようにして再生
+        // const audio = new Audio('victory.mp3');
+        // audio.play().catch(e => console.log('音声再生エラー:', e));
+        
+        // 代替として視覚的な"音"表現
+        console.log('🎉 VICTORY! 🎉');
+        console.log('♪ ファンファーレ ♪');
+    }
+    
+    // 演出エフェクトのクリーンアップ
+    cleanupCelebrationEffects() {
+        // ボードエフェクト削除
+        this.boardElement.classList.remove('goal-celebration');
+        
+        // 娘ピースエフェクト削除
+        const daughterElement = this.boardElement.querySelector('.piece.daughter');
+        if (daughterElement) {
+            daughterElement.classList.remove('goal-reached', 'goal-effect', 'celebrating');
+        }
+        
+        // 花火エフェクト削除
+        const fireworks = document.querySelectorAll('.firework');
+        fireworks.forEach(fw => {
+            if (fw.parentNode) {
+                fw.parentNode.removeChild(fw);
+            }
+        });
+        
+        // 残存するコンフェッティ削除
+        const confettis = document.querySelectorAll('.confetti');
+        confettis.forEach(conf => {
+            if (conf.parentNode) {
+                conf.parentNode.removeChild(conf);
+            }
+        });
     }
 
     // 勝利メッセージの非表示
     hideWinMessage() {
         this.winMessage.classList.add('hidden');
+        this.winMessage.classList.remove('enhanced');
         const overlay = document.getElementById('win-overlay');
         if (overlay) {
             overlay.remove();
         }
+        
+        // 演出エフェクトもクリーンアップ
+        this.cleanupCelebrationEffects();
     }
 
     // ゲームリセット
