@@ -84,12 +84,9 @@ class GameUI {
         element.dataset.pieceId = piece.id;
         element.textContent = piece.label;
         
-        // 位置とサイズの設定
-        const cellSize = getGame().cellSize;
-        element.style.left = `${piece.x * cellSize}px`;
-        element.style.top = `${piece.y * cellSize}px`;
-        element.style.width = `${piece.width * cellSize}px`;
-        element.style.height = `${piece.height * cellSize}px`;
+        // CSSカスタムプロパティを使用して位置を設定
+        element.style.left = `calc(var(--cell-size) * ${piece.x})`;
+        element.style.top = `calc(var(--cell-size) * ${piece.y})`;
         
         // 選択状態の反映
         if (getGame().selectedPiece && getGame().selectedPiece.id === piece.id) {
@@ -193,8 +190,8 @@ class GameUI {
         const relativeX = clientX - boardRect.left;
         const relativeY = clientY - boardRect.top;
         
-        // 新しい位置を計算
-        const cellSize = game.cellSize;
+        // 動的なセルサイズを計算
+        const cellSize = boardRect.width / 6; // 6x6のボード
         const newGridX = Math.round((relativeX - this.dragOffset.x) / cellSize);
         const newGridY = Math.round((relativeY - this.dragOffset.y) / cellSize);
         
@@ -378,8 +375,9 @@ class GameUI {
         // 既存のインジケーターを削除
         this.clearMoveIndicators();
         
-        const cellSize = game.cellSize;
-        const pieceElement = this.boardElement.querySelector(`[data-piece-id="${piece.id}"]`);
+        // 動的なセルサイズを計算
+        const boardRect = this.boardElement.getBoundingClientRect();
+        const cellSize = boardRect.width / 6;
         
         moves.forEach(direction => {
             const indicator = document.createElement('div');

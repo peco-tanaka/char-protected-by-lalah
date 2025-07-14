@@ -383,8 +383,15 @@ class HakoiriMusumeGame {
 
     // ピースを座標で取得
     getPieceAt(x, y) {
-        const gridX = Math.floor(x / this.cellSize);
-        const gridY = Math.floor(y / this.cellSize);
+        // 動的にセルサイズを計算
+        const boardElement = document.getElementById('game-board');
+        if (!boardElement) return null;
+        
+        const boardRect = boardElement.getBoundingClientRect();
+        const cellSize = boardRect.width / this.boardWidth;
+        
+        const gridX = Math.floor(x / cellSize);
+        const gridY = Math.floor(y / cellSize);
         
         if (gridX < 0 || gridX >= this.boardWidth || 
             gridY < 0 || gridY >= this.boardHeight) {
