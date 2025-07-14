@@ -14,8 +14,12 @@ document.addEventListener('DOMContentLoaded', function() {
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
         window.game = game;
         window.ui = ui;
+        window.gameUI = ui; // レスポンシブ対応のためのグローバル参照
         console.log('箱入り娘ゲーム - 開発モード');
         console.log('デバッグ用: window.game, window.ui が利用可能');
+    } else {
+        // 本番環境でもレスポンシブ対応のために必要
+        window.gameUI = ui;
     }
 });
 

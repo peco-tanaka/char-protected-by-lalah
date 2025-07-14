@@ -3,7 +3,7 @@ class HakoiriMusumeGame {
     constructor() {
         this.boardWidth = 6;
         this.boardHeight = 6;
-        this.cellSize = 80;
+        this.cellSize = this.calculateCellSize();
         this.board = [];
         this.pieces = [];
         this.moveCount = 0;
@@ -11,6 +11,36 @@ class HakoiriMusumeGame {
         this.selectedPiece = null;
         
         this.initializeGame();
+        this.setupResizeListener();
+    }
+
+    // 画面サイズに応じてセルサイズを計算
+    calculateCellSize() {
+        const screenWidth = window.innerWidth;
+        
+        if (screenWidth <= 400) {
+            return 33.33; // 200px / 6 = 33.33px
+        } else if (screenWidth <= 560) {
+            return 40; // 240px / 6 = 40px
+        } else if (screenWidth <= 768) {
+            return 50; // 300px / 6 = 50px
+        } else {
+            return 80; // デフォルト: 480px / 6 = 80px
+        }
+    }
+
+    // リサイズイベントリスナーを設定
+    setupResizeListener() {
+        window.addEventListener('resize', () => {
+            const newCellSize = this.calculateCellSize();
+            if (newCellSize !== this.cellSize) {
+                this.cellSize = newCellSize;
+                // UIを再描画
+                if (window.gameUI) {
+                    window.gameUI.renderBoard();
+                }
+            }
+        });
     }
 
     // ゲーム初期化
