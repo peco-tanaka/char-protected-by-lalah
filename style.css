@@ -1,0 +1,415 @@
+/* 基本設定 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.container {
+    max-width: 500px;
+    width: 100%;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+h1 {
+    text-align: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    font-size: 2rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.game-info {
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+/* ゲームボード */
+#game-container {
+    position: relative;
+    padding: 20px;
+    background: #f8f9fa;
+}
+
+.board {
+    width: 480px;
+    height: 480px;
+    margin: 0 auto;
+    position: relative;
+    background: #2c3e50;
+    border-radius: 10px;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+}
+
+.board::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        linear-gradient(to right, rgba(255,255,255,0.1) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.1) 1px, transparent 1px);
+    background-size: 80px 80px;
+    pointer-events: none;
+}
+
+/* 出口エリア */
+.exit-zone {
+    position: absolute;
+    bottom: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 160px;
+    height: 20px;
+    background: linear-gradient(to bottom, #27ae60, #2ecc71);
+    border-radius: 0 0 10px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: -1;
+}
+
+/* ピース */
+.piece {
+    position: absolute;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.piece:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.piece.selected {
+    border-color: #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+}
+
+.piece.dragging {
+    z-index: 1000;
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* ピースタイプ別スタイル */
+.piece.daughter {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    width: 160px;
+    height: 160px;
+    font-size: 18px;
+}
+
+.piece.parent {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    width: 80px;
+    height: 160px;
+    font-size: 14px;
+}
+
+.piece.small {
+    background: linear-gradient(135deg, #27ae60, #229954);
+    width: 80px;
+    height: 80px;
+    font-size: 12px;
+}
+
+.piece.special {
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    width: 320px;
+    height: 80px;
+    font-size: 14px;
+}
+
+.piece.worker {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    width: 160px;
+    height: 80px;
+    font-size: 14px;
+}
+
+.piece.elder {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+    width: 160px;
+    height: 80px;
+    font-size: 14px;
+}
+
+.piece.wall {
+    background: linear-gradient(135deg, #34495e, #2c3e50);
+    width: 160px;
+    height: 80px;
+    font-size: 14px;
+    cursor: not-allowed;
+    border: 2px solid #1a252f;
+}
+
+.piece.exit {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    width: 160px;
+    height: 80px;
+    font-size: 14px;
+    cursor: not-allowed;
+    border: 2px solid #1e8449;
+    box-shadow: 0 0 15px rgba(39, 174, 96, 0.5);
+}
+
+/* コントロール */
+#controls {
+    padding: 20px;
+    background: white;
+    border-top: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.button {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.button:active {
+    transform: translateY(0);
+}
+
+#stats {
+    display: flex;
+    gap: 20px;
+    font-size: 14px;
+    color: #666;
+}
+
+/* 説明書き */
+#instructions {
+    padding: 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #e9ecef;
+}
+
+#instructions h3 {
+    margin-bottom: 10px;
+    color: #2c3e50;
+}
+
+#instructions ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+#instructions li {
+    padding: 5px 0;
+    padding-left: 20px;
+    position: relative;
+}
+
+#instructions li::before {
+    content: '•';
+    color: #667eea;
+    position: absolute;
+    left: 0;
+}
+
+/* 勝利メッセージ */
+.win-message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    z-index: 2000;
+    max-width: 300px;
+    width: 90%;
+}
+
+.win-message h2 {
+    color: #e74c3c;
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+.win-message p {
+    margin-bottom: 15px;
+    color: #666;
+}
+
+.win-message .button {
+    margin-top: 10px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* 背景オーバーレイ */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 480px) {
+    .container {
+        margin: 10px;
+        border-radius: 15px;
+    }
+    
+    .board {
+        width: 420px;
+        height: 420px;
+    }
+    
+    .piece.daughter {
+        width: 140px;
+        height: 140px;
+        font-size: 16px;
+    }
+    
+    .piece.parent {
+        width: 70px;
+        height: 140px;
+        font-size: 12px;
+    }
+    
+    .piece.small {
+        width: 70px;
+        height: 70px;
+        font-size: 10px;
+    }
+    
+    .piece.special {
+        width: 280px;
+        height: 70px;
+        font-size: 12px;
+    }
+    
+    .piece.worker {
+        width: 140px;
+        height: 70px;
+        font-size: 12px;
+    }
+    
+    .piece.elder {
+        width: 140px;
+        height: 70px;
+        font-size: 12px;
+    }
+    
+    .piece.wall {
+        width: 140px;
+        height: 70px;
+        font-size: 12px;
+        cursor: not-allowed;
+        border: 2px solid #1a252f;
+    }
+    
+    .piece.exit {
+        width: 140px;
+        height: 70px;
+        font-size: 12px;
+        cursor: not-allowed;
+        border: 2px solid #1e8449;
+        box-shadow: 0 0 10px rgba(39, 174, 96, 0.5);
+    }
+    
+    .exit-zone {
+        width: 140px;
+    }
+    
+    #controls {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    #stats {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+        padding: 15px;
+    }
+}
+
+/* アニメーション */
+@keyframes celebration {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.celebrating {
+    animation: celebration 0.5s ease-in-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+.win-message:not(.hidden) {
+    animation: slideIn 0.5s ease-out;
+}

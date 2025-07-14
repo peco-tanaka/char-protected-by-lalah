@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>箱入り娘 - 大家族バリアント</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>箱入り娘</h1>
+        <div class="game-info">
+            <p>2×2の娘ピースを出口まで導こう！</p>
+        </div>
+        
+        <div id="game-container">
+            <div id="game-board" class="board">
+                <!-- ピースがここに動的に配置される -->
+            </div>
+            
+            <div class="exit-zone">
+                <span class="exit-label">出口</span>
+            </div>
+        </div>
+        
+        <div id="controls">
+            <button id="reset-btn" class="button">リセット</button>
+            <div id="stats">
+                <span id="move-count">移動回数: 0</span>
+                <span id="best-record">最短記録: --</span>
+            </div>
+        </div>
+        
+        <div id="instructions">
+            <h3>操作方法</h3>
+            <ul>
+                <li>ピースをドラッグして移動</li>
+                <li>タップでピースを選択し、矢印キーで移動</li>
+                <li>赤い娘ピースを下の出口まで導く</li>
+            </ul>
+        </div>
+        
+        <div id="win-message" class="win-message hidden">
+            <h2>おめでとう！</h2>
+            <p>娘が脱出しました！</p>
+            <p>移動回数: <span id="final-moves">0</span></p>
+            <button id="play-again" class="button">もう一度</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+    <script src="ui.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>
