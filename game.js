@@ -38,7 +38,7 @@ class HakoiriMusumeGame {
                 height: 2, 
                 x: 3, 
                 y: 0, 
-                label: '娘' 
+                label: 'シャア' 
             },
             
             // 父（1×2）- 位置(2,0)
@@ -49,7 +49,7 @@ class HakoiriMusumeGame {
                 height: 2, 
                 x: 2, 
                 y: 0, 
-                label: '父' 
+                label: '白い悪魔' 
             },
             
             // 母（1×2）- 位置(5,0)
@@ -60,7 +60,7 @@ class HakoiriMusumeGame {
                 height: 2, 
                 x: 5, 
                 y: 0, 
-                label: '母' 
+                label: '白い悪魔' 
             },
             
             // 手代（1×1）- 位置(0,2)
@@ -71,7 +71,7 @@ class HakoiriMusumeGame {
                 height: 1, 
                 x: 0, 
                 y: 2, 
-                label: '手代' 
+                label: 'RX-78' 
             },
             
             // 大番頭（4×1）- 位置(1,2)
@@ -82,7 +82,7 @@ class HakoiriMusumeGame {
                 height: 1, 
                 x: 1, 
                 y: 2, 
-                label: '大番頭' 
+                label: '「情けない奴」' 
             },
             
             // 兄嫁（1×1）- 位置(5,2)
@@ -93,7 +93,7 @@ class HakoiriMusumeGame {
                 height: 1, 
                 x: 5, 
                 y: 2, 
-                label: '兄嫁' 
+                label: 'RX-78' 
             },
             
             // 丁稚1（1×1）- 位置(0,3)
@@ -104,7 +104,7 @@ class HakoiriMusumeGame {
                 height: 1, 
                 x: 0, 
                 y: 3, 
-                label: '丁稚1' 
+                label: 'RX-78' 
             },
             
             // 女中（1×2）- 位置(1,3)
@@ -115,7 +115,7 @@ class HakoiriMusumeGame {
                 height: 1, 
                 x: 1, 
                 y: 3, 
-                label: '女中' 
+                label: 'νガンダム' 
             },
             
             // 番頭（1×2）- 位置(3,3)
@@ -126,7 +126,7 @@ class HakoiriMusumeGame {
                 height: 1, 
                 x: 3, 
                 y: 3, 
-                label: '番頭' 
+                label: 'νガンダム' 
             },
             
             // 丁稚2（1×1）- 位置(5,3)
@@ -137,7 +137,7 @@ class HakoiriMusumeGame {
                 height: 1, 
                 x: 5, 
                 y: 3, 
-                label: '丁稚2' 
+                label: 'RX-78' 
             },
             
             // 番犬（1×1）- 位置(0,4)
@@ -148,7 +148,7 @@ class HakoiriMusumeGame {
                 height: 1, 
                 x: 0, 
                 y: 4, 
-                label: '番犬' 
+                label: 'RX-78' 
             },
             
             // 祖父（1×2）- 位置(1,4)
@@ -159,7 +159,7 @@ class HakoiriMusumeGame {
                 height: 1, 
                 x: 1, 
                 y: 4, 
-                label: '祖父' 
+                label: '大佐引いて下さい！' 
             },
             
             // 祖母（1×2）- 位置(3,4)
@@ -170,7 +170,7 @@ class HakoiriMusumeGame {
                 height: 1, 
                 x: 3, 
                 y: 4, 
-                label: '祖母' 
+                label: '大佐どいて下さい！' 
             },
             
             // 丁稚3（1×1）- 位置(5,4)
@@ -181,7 +181,7 @@ class HakoiriMusumeGame {
                 height: 1, 
                 x: 5, 
                 y: 4, 
-                label: '丁稚3' 
+                label: 'RX-78' 
             },
             
             // 移動不可ブロック1（2×1）- 位置(0,5)
@@ -192,7 +192,7 @@ class HakoiriMusumeGame {
                 height: 1, 
                 x: 0, 
                 y: 5, 
-                label: '壁' 
+                label: '' 
             },
             
             // 移動不可ブロック2（2×1）- 位置(4,5)
@@ -203,7 +203,7 @@ class HakoiriMusumeGame {
                 height: 1, 
                 x: 4, 
                 y: 5, 
-                label: '壁' 
+                label: '' 
             },
             
             // 出口（2×1）- 位置(2,5)
@@ -214,7 +214,7 @@ class HakoiriMusumeGame {
                 height: 1, 
                 x: 2, 
                 y: 5, 
-                label: '出口' 
+                label: '白いガンダム' 
             }
         ];
         
