@@ -189,7 +189,7 @@ class HakoiriMusumeGame {
                 height: 1, 
                 x: 1, 
                 y: 4, 
-                label: '大佐引いて下さい！' 
+                label: '「大佐引いて下さい！」' 
             },
             
             // 祖母（1×2）- 位置(3,4)
@@ -200,7 +200,7 @@ class HakoiriMusumeGame {
                 height: 1, 
                 x: 3, 
                 y: 4, 
-                label: '大佐どいて下さい！' 
+                label: '「大佐どいて下さい！」' 
             },
             
             // 丁稚3（1×1）- 位置(5,4)
