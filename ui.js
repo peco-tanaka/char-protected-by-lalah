@@ -12,6 +12,8 @@ class GameUI {
         this.draggedPiece = null;
         this.dragOffset = { x: 0, y: 0 };
         this.touchStartPos = { x: 0, y: 0 };
+        this.lastKnownX = null;
+        this.lastKnownY = null;
         this.isTouchDevice = 'ontouchstart' in window;
         
         this.setupEventListeners();
@@ -35,32 +37,67 @@ class GameUI {
             this.handleKeyPress(e);
         });
 
-        // マウス・タッチイベント
-        this.boardElement.addEventListener('mousedown', (e) => {
-            this.handlePointerDown(e);
-        });
+        // ポインターイベントで統一的に処理（タッチとマウス両対応）
+        if ('onpointerdown' in window) {
+            // ポインターイベントが利用可能
+            this.boardElement.addEventListener('pointerdown', (e) => {
+                this.handlePointerStart(e);
+            });
 
+            document.addEventListener('pointermove', (e) => {
+                this.handlePointerMove(e);
+            });
+
+            document.addEventListener('pointerup', (e) => {
+                this.handlePointerEnd(e);
+            });
+            
+            // ポインターキャンセルも処理
+            document.addEventListener('pointercancel', (e) => {
+                this.handlePointerEnd(e);
+            });
+        } else {
+            // フォールバック: タッチとマウスイベントを別々で処理
+            this.setupFallbackEvents();
+        }
+        
+        // デバッグ用情報
+        console.log('Pointer events supported:', 'onpointerdown' in window);
+        console.log('Touch device:', 'ontouchstart' in window || navigator.maxTouchPoints > 0);
+    }
+    
+    // フォールバックイベント設定
+    setupFallbackEvents() {
+        // タッチイベント
         this.boardElement.addEventListener('touchstart', (e) => {
             e.preventDefault();
-            this.handlePointerDown(e);
+            this.handlePointerStart(e.touches[0]);
+        }, { passive: false });
+
+        document.addEventListener('touchmove', (e) => {
+            if (this.draggedPiece && e.touches.length > 0) {
+                e.preventDefault();
+                this.handlePointerMove(e.touches[0]);
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchend', (e) => {
+            if (e.changedTouches && e.changedTouches.length > 0) {
+                this.handlePointerEnd(e.changedTouches[0]);
+            }
+        });
+        
+        // マウスイベント
+        this.boardElement.addEventListener('mousedown', (e) => {
+            this.handlePointerStart(e);
         });
 
         document.addEventListener('mousemove', (e) => {
             this.handlePointerMove(e);
         });
 
-        document.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            this.handlePointerMove(e);
-        });
-
         document.addEventListener('mouseup', (e) => {
-            this.handlePointerUp(e);
-        });
-
-        document.addEventListener('touchend', (e) => {
-            e.preventDefault();
-            this.handlePointerUp(e);
+            this.handlePointerEnd(e);
         });
     }
 
@@ -105,21 +142,41 @@ class GameUI {
         this.bestRecordElement.textContent = `最短記録: ${bestRecord !== null ? bestRecord : '--'}`;
     }
 
-    // ポインターダウン処理
-    handlePointerDown(e) {
+    // 統一ポインター開始処理
+    handlePointerStart(e) {
         const game = getGame();
         if (game.gameWon) return;
-
-        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        
+        // ポインターイベントまたはタッチ/マウスイベントから座標取得
+        const clientX = e.clientX;
+        const clientY = e.clientY;
+        
+        // デバッグ情報
+        console.log('Pointer start:', {
+            type: e.type,
+            pointerType: e.pointerType || 'unknown',
+            clientX,
+            clientY,
+            isPrimary: e.isPrimary !== undefined ? e.isPrimary : true
+        });
         
         const boardRect = this.boardElement.getBoundingClientRect();
         const relativeX = clientX - boardRect.left;
         const relativeY = clientY - boardRect.top;
         
+        console.log('Board rect:', boardRect);
+        console.log('Relative position:', { relativeX, relativeY });
+        
         const piece = game.getPieceAt(relativeX, relativeY);
+        console.log('Piece found:', piece);
         
         if (piece && piece.type !== 'wall' && piece.type !== 'exit') {
+            // ポインターキャプチャを設定（ポインターイベントの場合）
+            if (e.setPointerCapture && e.pointerId !== undefined) {
+                this.boardElement.setPointerCapture(e.pointerId);
+                this.capturedPointerId = e.pointerId;
+            }
+            
             game.selectedPiece = piece;
             this.draggedPiece = piece;
             
@@ -130,26 +187,36 @@ class GameUI {
                 this.dragOffset.x = clientX - pieceRect.left;
                 this.dragOffset.y = clientY - pieceRect.top;
                 
+                console.log('Piece rect:', pieceRect);
+                console.log('Drag offset:', this.dragOffset);
+                
                 // ドラッグ開始時の元の位置を保存
                 this.originalPiecePosition = {
                     x: piece.x,
                     y: piece.y
                 };
+                
+                // 即座にドラッグ状態を表示
+                pieceElement.style.zIndex = '1000';
+                pieceElement.classList.add('dragging');
+                
+                console.log('Drag started for piece:', piece.id, 'at position:', piece.x, piece.y);
             }
             
-            this.touchStartPos.x = clientX;
-            this.touchStartPos.y = clientY;
+            this.pointerStartPos = { x: clientX, y: clientY };
             
             this.renderBoard();
+        } else {
+            console.log('No movable piece found at position');
         }
     }
 
-    // ポインタームーブ処理
+    // 統一ポインター移動処理
     handlePointerMove(e) {
         if (!this.draggedPiece) return;
-
-        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        
+        const clientX = e.clientX;
+        const clientY = e.clientY;
         
         const pieceElement = this.boardElement.querySelector(`[data-piece-id="${this.draggedPiece.id}"]`);
         if (pieceElement) {
@@ -157,7 +224,10 @@ class GameUI {
             const newX = clientX - boardRect.left - this.dragOffset.x;
             const newY = clientY - boardRect.top - this.dragOffset.y;
             
-            // 視覚的な移動のみ（実際の駒の位置は変更しない）
+            // 最後の既知の位置を保存
+            this.lastKnownPos = { x: clientX, y: clientY };
+            
+            // 視覚的な移動のみ、実際のゲーム状態は変更しない
             pieceElement.style.left = `${newX}px`;
             pieceElement.style.top = `${newY}px`;
             pieceElement.style.zIndex = '1000';
@@ -165,24 +235,42 @@ class GameUI {
         }
     }
 
-    // ポインターアップ処理
-    handlePointerUp(e) {
+    // 統一ポインター終了処理
+    handlePointerEnd(e) {
         if (!this.draggedPiece) return;
-
+        
+        console.log('Pointer end detected:', {
+            type: e.type,
+            pointerType: e.pointerType || 'unknown',
+            pointerId: e.pointerId
+        });
+        
         const game = getGame();
-        const clientX = e.clientX || (e.changedTouches && e.changedTouches[0].clientX);
-        const clientY = e.clientY || (e.changedTouches && e.changedTouches[0].clientY);
+        
+        // ポインターキャプチャを解除
+        if (this.capturedPointerId !== undefined && e.pointerId === this.capturedPointerId) {
+            this.boardElement.releasePointerCapture(this.capturedPointerId);
+            this.capturedPointerId = undefined;
+        }
+        
+        // 終了位置を取得（最後の既知の位置またはイベントから）
+        const clientX = e.clientX || (this.lastKnownPos ? this.lastKnownPos.x : this.pointerStartPos.x);
+        const clientY = e.clientY || (this.lastKnownPos ? this.lastKnownPos.y : this.pointerStartPos.y);
+        
+        console.log('End position:', { clientX, clientY });
         
         // ドラッグ距離の計算
         const dragDistance = Math.sqrt(
-            Math.pow(clientX - this.touchStartPos.x, 2) + 
-            Math.pow(clientY - this.touchStartPos.y, 2)
+            Math.pow(clientX - this.pointerStartPos.x, 2) + 
+            Math.pow(clientY - this.pointerStartPos.y, 2)
         );
         
-        // 短いドラッグはタップとして扱う
-        if (dragDistance < 10) {
-            this.draggedPiece = null;
-            this.renderBoard();
+        console.log('Drag distance:', dragDistance);
+        
+        // 短いドラッグはタップ/クリックとして扱う
+        if (dragDistance < 15) { // 闾値を少し上げる
+            console.log('Tap/click detected, not drag');
+            this.cleanupDrag();
             return;
         }
 
@@ -190,27 +278,78 @@ class GameUI {
         const relativeX = clientX - boardRect.left;
         const relativeY = clientY - boardRect.top;
         
-        // 動的なセルサイズを計算
+        // 正確なセルサイズを使用
         const cellSize = boardRect.width / 6; // 6x6のボード
-        const newGridX = Math.round((relativeX - this.dragOffset.x) / cellSize);
-        const newGridY = Math.round((relativeY - this.dragOffset.y) / cellSize);
+        
+        // ピースの中心位置を考慮したグリッド位置の計算
+        const pieceElement = this.boardElement.querySelector(`[data-piece-id="${this.draggedPiece.id}"]`);
+        const pieceCenterX = relativeX - this.dragOffset.x + (this.draggedPiece.width * cellSize) / 2;
+        const pieceCenterY = relativeY - this.dragOffset.y + (this.draggedPiece.height * cellSize) / 2;
+        
+        const newGridX = Math.floor(pieceCenterX / cellSize);
+        const newGridY = Math.floor(pieceCenterY / cellSize);
+        
+        console.log('Calculated grid position:', { 
+            newGridX, newGridY, 
+            pieceCenterX, pieceCenterY, 
+            cellSize,
+            pieceSize: { width: this.draggedPiece.width, height: this.draggedPiece.height }
+        });
         
         // 移動を試行
         let moved = false;
         
         // 目標位置への移動を試行
         if (this.canMoveToPosition(this.draggedPiece, newGridX, newGridY)) {
-            // 元の位置から目標位置への移動を実行
             moved = this.moveToPosition(this.draggedPiece, newGridX, newGridY);
+            console.log('Move executed successfully:', moved);
+        } else {
+            console.log('Move not possible to position:', { newGridX, newGridY });
+            // 近くの有効な位置を探す
+            const nearbyPositions = this.findNearbyValidPositions(this.draggedPiece, newGridX, newGridY);
+            if (nearbyPositions.length > 0) {
+                const closest = nearbyPositions[0];
+                moved = this.moveToPosition(this.draggedPiece, closest.x, closest.y);
+                console.log('Moved to nearby position:', closest, 'success:', moved);
+            }
         }
 
-        this.draggedPiece = null;
-        this.renderBoard();
+        this.cleanupDrag();
         
         // 勝利チェック
         if (game.gameWon) {
             this.showWinMessage();
         }
+    }
+    
+    // ドラッグ状態のクリーンアップ
+    cleanupDrag() {
+        this.draggedPiece = null;
+        this.lastKnownPos = null;
+        this.pointerStartPos = null;
+        this.capturedPointerId = undefined;
+        this.renderBoard();
+    }
+    
+    // 近くの有効な位置を探す
+    findNearbyValidPositions(piece, targetX, targetY) {
+        const positions = [];
+        const maxDistance = 2;
+        
+        for (let dx = -maxDistance; dx <= maxDistance; dx++) {
+            for (let dy = -maxDistance; dy <= maxDistance; dy++) {
+                const x = targetX + dx;
+                const y = targetY + dy;
+                
+                if (this.canMoveToPosition(piece, x, y)) {
+                    const distance = Math.abs(dx) + Math.abs(dy);
+                    positions.push({ x, y, distance });
+                }
+            }
+        }
+        
+        // 距離でソート
+        return positions.sort((a, b) => a.distance - b.distance);
     }
 
     // 指定位置への移動が可能かチェック
