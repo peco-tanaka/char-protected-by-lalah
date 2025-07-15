@@ -229,11 +229,12 @@ h1 {
     background: #ffffff;
     width: calc(var(--cell-size) * 4);
     height: var(--cell-size);
-    font-size: calc(var(--cell-size) * 0.3);
+    font-size: calc(var(--cell-size) * 0.4);
     color: #000;
-    font-weight: 400;
-    letter-spacing: -0.5px;
-    text-transform: uppercase;
+    font-family: 'Hiragino Mincho ProN', 'Hiragino Mincho Pro', 'ヒラギノ明朝 ProN', 'ヒラギノ明朝 Pro', serif;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    text-transform: none;
 }
 
 .piece.worker {
