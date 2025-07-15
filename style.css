@@ -109,16 +109,7 @@ h1 {
     user-select: none;
 }
 
-.board::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(45deg, transparent 49%, rgba(220, 53, 69, 0.1) 50%, transparent 51%);
-    pointer-events: none;
-}
+
 
 .board::before {
     content: '';
