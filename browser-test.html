@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ゴール演出テストページ</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background: #2a2a2a;
+        }
+        .button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+        }
+        .button:hover {
+            background: #c82333;
+        }
+        .success {
+            color: #28a745;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .info {
+            color: #17a2b8;
+        }
+        #results {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 ゴール演出テストページ</h1>
+    
+    <div class="test-section">
+        <h2>📋 テスト実行</h2>
+        <button class="button" onclick="runDebugWinCondition()">現在の勝利状態を確認</button>
+        <button class="button" onclick="runTestVictory()">勝利条件テスト</button>
+        <button class="button" onclick="runTestCelebration()">演出テスト</button>
+        <button class="button" onclick="clearResults()">結果をクリア</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎮 手動テスト</h2>
+        <p>以下のリンクでメインゲームを開いて手動テストも可能です：</p>
+        <a href="index.html" target="_blank" style="color: #17a2b8;">メインゲームを開く</a>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 テスト結果</h2>
+        <div id="results">テスト結果がここに表示されます...</div>
+    </div>
+
+    <!-- ゲームファイルを読み込み -->
+    <script src="game.js"></script>
+    <script src="ui.js"></script>
+    <script src="main.js"></script>
+
+    <script>
+        let testResults = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'success' ? '✅' : type === 'error' ? '❌' : '📝';
+            const logMessage = `[${timestamp}] ${prefix} ${message}`;
+            testResults.push(logMessage);
+            updateResults();
+            console.log(message);
+        }
+        
+        function updateResults() {
+            document.getElementById('results').textContent = testResults.join('\n');
+            document.getElementById('results').scrollTop = document.getElementById('results').scrollHeight;
+        }
+        
+        function clearResults() {
+            testResults = [];
+            updateResults();
+        }
+        
+        // ゲームが読み込まれるまで待機
+        function waitForGame() {
+            return new Promise((resolve) => {
+                if (typeof getGame === 'function') {
+                    resolve();
+                } else {
+                    setTimeout(() => waitForGame().then(resolve), 100);
+                }
+            });
+        }
+        
+        async function runDebugWinCondition() {
+            log('=== 現在の勝利状態確認テスト開始 ===');
+            
+            try {
+                await waitForGame();
+                const game = getGame();
+                
+                if (!game) {
+                    log('ゲームインスタンスが見つかりません', 'error');
+                    return;
+                }
+                
+                // 勝利状態をデバッグ
+                game.debugWinCondition();
+                log('勝利状態確認テスト完了', 'success');
+                
+            } catch (error) {
+                log(`エラー: ${error.message}`, 'error');
+            }
+        }
+        
+        async function runTestVictory() {
+            log('=== 勝利条件テスト開始 ===');
+            
+            try {
+                await waitForGame();
+                const game = getGame();
+                const ui = getUI();
+                
+                if (!game || !ui) {
+                    log('ゲームまたはUIインスタンスが見つかりません', 'error');
+                    return;
+                }
+                
+                // 勝利テストを実行
+                const result = game.testWin();
+                
+                if (result) {
+                    log('勝利条件テスト成功！演出が発動されました', 'success');
+                } else {
+                    log('勝利条件テストが失敗しました', 'error');
+                }
+                
+            } catch (error) {
+                log(`エラー: ${error.message}`, 'error');
+            }
+        }
+        
+        async function runTestCelebration() {
+            log('=== 演出テスト開始 ===');
+            
+            try {
+                await waitForGame();
+                const game = getGame();
+                
+                if (!game) {
+                    log('ゲームインスタンスが見つかりません', 'error');
+                    return;
+                }
+                
+                // 演出テストを実行
+                game.testCelebration();
+                log('演出テスト完了', 'success');
+                
+            } catch (error) {
+                log(`エラー: ${error.message}`, 'error');
+            }
+        }
+        
+        // 初期化
+        window.addEventListener('DOMContentLoaded', () => {
+            log('テストページが読み込まれました');
+            log('上記のボタンをクリックしてテストを実行してください');
+        });
+    </script>
+</body>
+</html>

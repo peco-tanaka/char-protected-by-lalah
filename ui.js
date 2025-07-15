@@ -342,10 +342,23 @@ class GameUI {
             }
         }
 
+        // 勝利チェックを移動後に確実に実行
+        const wasWon = game.gameWon;
+        
         this.cleanupDrag();
         
-        // 勝利チェック
-        if (game.gameWon) {
+        // 移動が成功した場合、勝利チェックを再実行
+        if (moved && !wasWon) {
+            console.log('Checking win condition after drag movement...');
+            if (game.checkWin()) {
+                game.gameWon = true;
+                game.saveBestRecord();
+                console.log('Victory detected! Starting celebration...');
+                this.showWinMessage();
+            }
+        } else if (game.gameWon && !wasWon) {
+            // ゲーム状態で勝利が既に設定されている場合
+            console.log('Victory already detected! Starting celebration...');
             this.showWinMessage();
         }
     }
@@ -431,8 +444,6 @@ class GameUI {
         const deltaY = targetY - piece.y;
         
         let moved = false;
-        const originalX = piece.x;
-        const originalY = piece.y;
         
         // 水平移動を試行
         if (deltaX !== 0) {
@@ -473,6 +484,17 @@ class GameUI {
         }
         
         console.log(`Move completed: moved=${moved}, final position: (${piece.x}, ${piece.y})`);
+        
+        // 移動成功後に勝利チェック
+        if (moved) {
+            console.log('Checking win condition after moveToPosition...');
+            if (game.checkWin() && !game.gameWon) {
+                game.gameWon = true;
+                game.saveBestRecord();
+                console.log('Victory detected in moveToPosition!');
+            }
+        }
+        
         return moved;
     }
 

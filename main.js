@@ -332,7 +332,26 @@ function debugGame() {
     console.log('移動可能な方向:', game.selectedPiece ? game.getPossibleMoves(game.selectedPiece) : 'ピースが選択されていません');
 }
 
+// テスト用グローバル関数
+function testVictory() {
+    const game = getGame();
+    return game.testWin();
+}
+
+function testCelebration() {
+    const game = getGame();
+    game.testCelebration();
+}
+
+function debugWinCondition() {
+    const game = getGame();
+    game.debugWinCondition();
+}
+
 // グローバル関数として公開（開発時のみ）
 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     window.debugGame = debugGame;
+    window.testVictory = testVictory;
+    window.testCelebration = testCelebration;
+    window.debugWinCondition = debugWinCondition;
 }

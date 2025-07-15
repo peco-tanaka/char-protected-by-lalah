@@ -378,7 +378,36 @@ class HakoiriMusumeGame {
     // 勝利条件チェック
     checkWin() {
         const daughter = this.pieces.find(p => p.type === 'daughter');
-        return daughter && daughter.x === 2 && daughter.y === 4;
+        const exit = this.pieces.find(p => p.type === 'exit');
+        
+        if (!daughter || !exit) {
+            console.log('Win check: daughter or exit piece not found');
+            return false;
+        }
+        
+        // 娘ピースが出口ピースと重なっているかチェック
+        const daughterOverlapsExit = (
+            daughter.x === exit.x && 
+            daughter.y === exit.y
+        );
+        
+        // 娘ピースが出口位置(2,5)または(2,4)に到達
+        const daughterAtExit = (
+            (daughter.x === 2 && daughter.y === 5) ||
+            (daughter.x === 2 && daughter.y === 4)
+        );
+        
+        const isWin = daughterOverlapsExit || daughterAtExit;
+        
+        console.log('Win check:', {
+            daughter: { x: daughter.x, y: daughter.y },
+            exit: { x: exit.x, y: exit.y },
+            daughterOverlapsExit,
+            daughterAtExit,
+            isWin
+        });
+        
+        return isWin;
     }
 
     // ピースを座標で取得
@@ -521,6 +550,84 @@ class HakoiriMusumeGame {
                 }
             }
         }
+    }
+
+    // テスト用: 娘ピースを強制的にゴール位置に移動
+    testWin() {
+        console.log('=== Testing Victory Condition ===');
+        const daughter = this.pieces.find(p => p.type === 'daughter');
+        const exit = this.pieces.find(p => p.type === 'exit');
+        
+        if (!daughter || !exit) {
+            console.error('Daughter or exit piece not found!');
+            return false;
+        }
+        
+        console.log('Before test move:');
+        console.log('Daughter position:', { x: daughter.x, y: daughter.y });
+        console.log('Exit position:', { x: exit.x, y: exit.y });
+        console.log('Game won status:', this.gameWon);
+        
+        // 娘ピースを出口位置に移動
+        daughter.x = exit.x;
+        daughter.y = exit.y;
+        
+        this.updateBoard();
+        
+        console.log('After test move:');
+        console.log('Daughter position:', { x: daughter.x, y: daughter.y });
+        console.log('Checking win condition...');
+        
+        const won = this.checkWin();
+        if (won) {
+            this.gameWon = true;
+            this.saveBestRecord();
+            console.log('✅ Victory condition met! Game won:', this.gameWon);
+            
+            // UI側に勝利を通知
+            const ui = getUI();
+            if (ui) {
+                setTimeout(() => {
+                    ui.showWinMessage();
+                }, 100);
+            }
+            
+            return true;
+        } else {
+            console.log('❌ Victory condition not met');
+            return false;
+        }
+    }
+
+    // テスト用: 演出の各段階をテスト
+    testCelebration() {
+        console.log('=== Testing Celebration Effects ===');
+        const ui = getUI();
+        if (!ui) {
+            console.error('UI not found!');
+            return;
+        }
+        
+        // 段階的に演出をテスト
+        console.log('1. Testing goal celebration...');
+        ui.startGoalCelebration();
+        
+        setTimeout(() => {
+            console.log('2. Testing win message...');
+            ui.showWinMessage();
+        }, 2000);
+    }
+
+    // デバッグ用: 現在の勝利状態を確認
+    debugWinCondition() {
+        console.log('=== Win Condition Debug ===');
+        const daughter = this.pieces.find(p => p.type === 'daughter');
+        const exit = this.pieces.find(p => p.type === 'exit');
+        
+        console.log('Daughter piece:', daughter);
+        console.log('Exit piece:', exit);
+        console.log('Game won status:', this.gameWon);
+        console.log('Win check result:', this.checkWin());
     }
 }
 
