@@ -221,8 +221,23 @@ class GameUI {
         const pieceElement = this.boardElement.querySelector(`[data-piece-id="${this.draggedPiece.id}"]`);
         if (pieceElement) {
             const boardRect = this.boardElement.getBoundingClientRect();
-            const newX = clientX - boardRect.left - this.dragOffset.x;
-            const newY = clientY - boardRect.top - this.dragOffset.y;
+            const pieceRect = {
+                width: this.draggedPiece.width * (boardRect.width / 6),
+                height: this.draggedPiece.height * (boardRect.width / 6)
+            };
+            
+            // ドラッグオフセットを考慮した新しい位置を計算
+            let newX = clientX - boardRect.left - this.dragOffset.x;
+            let newY = clientY - boardRect.top - this.dragOffset.y;
+            
+            // ボード境界内に制限（ピースのサイズを考慮）
+            const minX = 0;
+            const minY = 0;
+            const maxX = boardRect.width - pieceRect.width;
+            const maxY = boardRect.height - pieceRect.height;
+            
+            newX = Math.max(minX, Math.min(maxX, newX));
+            newY = Math.max(minY, Math.min(maxY, newY));
             
             // 最後の既知の位置を保存
             this.lastKnownPos = { x: clientX, y: clientY };
