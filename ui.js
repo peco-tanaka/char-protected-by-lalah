@@ -689,6 +689,11 @@ class GameUI {
             
             this.boardElement.appendChild(indicator);
         });
+        
+        // 移動できない場合は理由を表示（デバッグ情報）
+        if (moves.length === 0) {
+            console.log(`${piece.label}は現在移動できません。他のピースを先に移動させて空間を作ってください。`);
+        }
     }
 
     // 移動インジケーターのクリア

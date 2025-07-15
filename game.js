@@ -459,6 +459,69 @@ class HakoiriMusumeGame {
             console.log(`${piece.label} (${piece.type}): (${piece.x}, ${piece.y}) ${piece.width}x${piece.height}`);
         });
     }
+
+    // 特定ピースの移動可能性をデバッグ
+    debugPieceMovement(pieceId) {
+        const piece = this.getPieceById(pieceId);
+        if (!piece) {
+            console.log(`Piece with ID ${pieceId} not found`);
+            return;
+        }
+        
+        console.log(`=== Debug: ${piece.label} (ID: ${piece.id}) ===`);
+        console.log(`Position: (${piece.x}, ${piece.y}), Size: ${piece.width}x${piece.height}`);
+        console.log(`Type: ${piece.type}`);
+        
+        const directions = ['up', 'down', 'left', 'right'];
+        directions.forEach(direction => {
+            const canMove = this.canMove(piece, direction);
+            console.log(`Can move ${direction}: ${canMove}`);
+            
+            if (!canMove) {
+                // 移動できない理由を詳しく調べる
+                this.debugMovementBlocked(piece, direction);
+            }
+        });
+    }
+
+    // 移動がブロックされる理由を詳しく分析
+    debugMovementBlocked(piece, direction) {
+        let newX = piece.x;
+        let newY = piece.y;
+        
+        switch (direction) {
+            case 'up': newY--; break;
+            case 'down': newY++; break;
+            case 'left': newX--; break;
+            case 'right': newX++; break;
+        }
+        
+        console.log(`  Attempting to move ${direction} to (${newX}, ${newY})`);
+        
+        // 境界チェック
+        if (newX < 0 || newX + piece.width > this.boardWidth ||
+            newY < 0 || newY + piece.height > this.boardHeight) {
+            console.log(`  ❌ Boundary violation: newX=${newX}, newY=${newY}, pieceWidth=${piece.width}, pieceHeight=${piece.height}`);
+            console.log(`    Board size: ${this.boardWidth}x${this.boardHeight}`);
+            return;
+        }
+        
+        // 衝突チェック
+        for (let y = 0; y < piece.height; y++) {
+            for (let x = 0; x < piece.width; x++) {
+                const checkX = newX + x;
+                const checkY = newY + y;
+                
+                if (checkY < this.boardHeight && checkX < this.boardWidth) {
+                    const cellValue = this.board[checkY][checkX];
+                    if (cellValue !== 0 && cellValue !== piece.id) {
+                        const blockingPiece = this.pieces.find(p => p.id === cellValue);
+                        console.log(`  ❌ Collision at (${checkX}, ${checkY}) with piece ID ${cellValue}: ${blockingPiece ? blockingPiece.label : 'Unknown'}`);
+                    }
+                }
+            }
+        }
+    }
 }
 
 // グローバルなゲームインスタンス
