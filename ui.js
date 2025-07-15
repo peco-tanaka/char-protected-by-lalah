@@ -296,19 +296,32 @@ class GameUI {
         // 正確なセルサイズを使用
         const cellSize = boardRect.width / 6; // 6x6のボード
         
-        // ピースの中心位置を考慮したグリッド位置の計算
-        const pieceElement = this.boardElement.querySelector(`[data-piece-id="${this.draggedPiece.id}"]`);
-        const pieceCenterX = relativeX - this.dragOffset.x + (this.draggedPiece.width * cellSize) / 2;
-        const pieceCenterY = relativeY - this.dragOffset.y + (this.draggedPiece.height * cellSize) / 2;
+        // ピースの左上角を基準とした位置を計算
+        const pieceLeftX = relativeX - this.dragOffset.x;
+        const pieceTopY = relativeY - this.dragOffset.y;
         
-        const newGridX = Math.floor(pieceCenterX / cellSize);
-        const newGridY = Math.floor(pieceCenterY / cellSize);
+        // 4×1ピースなど大きなピースの場合、左上角を基準にグリッド位置を計算
+        // グリッドスナップを行う
+        let newGridX = Math.round(pieceLeftX / cellSize);
+        let newGridY = Math.round(pieceTopY / cellSize);
+        
+        // 4×1ピース（大番頭）の場合の特別処理
+        if (this.draggedPiece.width === 4 && this.draggedPiece.height === 1) {
+            // 水平移動を優先し、より正確なスナップを行う
+            const centerX = pieceLeftX + (this.draggedPiece.width * cellSize) / 2;
+            newGridX = Math.round(centerX / cellSize) - Math.floor(this.draggedPiece.width / 2);
+            
+            // 境界チェック
+            if (newGridX < 0) newGridX = 0;
+            if (newGridX + this.draggedPiece.width > 6) newGridX = 6 - this.draggedPiece.width;
+        }
         
         console.log('Calculated grid position:', { 
             newGridX, newGridY, 
-            pieceCenterX, pieceCenterY, 
+            pieceLeftX, pieceTopY, 
             cellSize,
-            pieceSize: { width: this.draggedPiece.width, height: this.draggedPiece.height }
+            pieceSize: { width: this.draggedPiece.width, height: this.draggedPiece.height },
+            originalPosition: { x: this.draggedPiece.x, y: this.draggedPiece.y }
         });
         
         // 移動を試行
@@ -371,9 +384,10 @@ class GameUI {
     canMoveToPosition(piece, targetX, targetY) {
         const game = getGame();
         
-        // 目標位置が境界内かチェック
-        if (targetX < 0 || targetX >= game.boardWidth || 
-            targetY < 0 || targetY >= game.boardHeight) {
+        // 目標位置が境界内かチェック（ピースのサイズも考慮）
+        if (targetX < 0 || targetX + piece.width > game.boardWidth || 
+            targetY < 0 || targetY + piece.height > game.boardHeight) {
+            console.log(`Boundary check failed: targetX=${targetX}, targetY=${targetY}, pieceSize=${piece.width}x${piece.height}, boardSize=${game.boardWidth}x${game.boardHeight}`);
             return false;
         }
         
@@ -383,13 +397,9 @@ class GameUI {
                 const checkX = targetX + x;
                 const checkY = targetY + y;
                 
-                // 境界チェック
-                if (checkX >= game.boardWidth || checkY >= game.boardHeight) {
-                    return false;
-                }
-                
                 // 他の駒との衝突チェック
                 if (game.board[checkY][checkX] !== 0 && game.board[checkY][checkX] !== piece.id) {
+                    console.log(`Collision detected at (${checkX}, ${checkY}) with piece ID ${game.board[checkY][checkX]}`);
                     return false;
                 }
             }
@@ -402,21 +412,42 @@ class GameUI {
     moveToPosition(piece, targetX, targetY) {
         const game = getGame();
         
+        console.log(`Attempting to move ${piece.label} from (${piece.x}, ${piece.y}) to (${targetX}, ${targetY})`);
+        
+        // 目標位置が現在位置と同じ場合は何もしない
+        if (piece.x === targetX && piece.y === targetY) {
+            console.log('Target position is same as current position');
+            return false;
+        }
+        
+        // 最終的な目標位置への移動が可能かまず確認
+        if (!this.canMoveToPosition(piece, targetX, targetY)) {
+            console.log('Final target position is not valid');
+            return false;
+        }
+        
         // 移動可能な場合、適切な方向に移動
         const deltaX = targetX - piece.x;
         const deltaY = targetY - piece.y;
         
         let moved = false;
+        const originalX = piece.x;
+        const originalY = piece.y;
         
         // 水平移動を試行
         if (deltaX !== 0) {
             const direction = deltaX > 0 ? 'right' : 'left';
             const steps = Math.abs(deltaX);
             
+            console.log(`Trying to move ${direction} by ${steps} steps`);
+            
             for (let i = 0; i < steps; i++) {
                 if (game.canMove(piece, direction)) {
-                    moved = game.movePiece(piece, direction) || moved;
+                    const moveResult = game.movePiece(piece, direction);
+                    moved = moveResult || moved;
+                    console.log(`Step ${i + 1}: moved ${direction} - success: ${moveResult}, current position: (${piece.x}, ${piece.y})`);
                 } else {
+                    console.log(`Step ${i + 1}: cannot move ${direction}, stopping horizontal movement`);
                     break;
                 }
             }
@@ -427,15 +458,21 @@ class GameUI {
             const direction = deltaY > 0 ? 'down' : 'up';
             const steps = Math.abs(deltaY);
             
+            console.log(`Trying to move ${direction} by ${steps} steps`);
+            
             for (let i = 0; i < steps; i++) {
                 if (game.canMove(piece, direction)) {
-                    moved = game.movePiece(piece, direction) || moved;
+                    const moveResult = game.movePiece(piece, direction);
+                    moved = moveResult || moved;
+                    console.log(`Step ${i + 1}: moved ${direction} - success: ${moveResult}, current position: (${piece.x}, ${piece.y})`);
                 } else {
+                    console.log(`Step ${i + 1}: cannot move ${direction}, stopping vertical movement`);
                     break;
                 }
             }
         }
         
+        console.log(`Move completed: moved=${moved}, final position: (${piece.x}, ${piece.y})`);
         return moved;
     }
 
