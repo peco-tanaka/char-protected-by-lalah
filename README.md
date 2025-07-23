@@ -2,7 +2,10 @@
 
 箱入り坊やゲームのガンダム版！大佐を白いガンダムまで導こう！
 
-## セットアップと起動手順
+https://peco-tanaka.github.io/char-protected-by-lalah/
+
+
+## ローカル環境の起動手順
 
 ### 1. プロジェクトのクローン
 ```bash
